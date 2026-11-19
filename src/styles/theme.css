@@ -1,0 +1,130 @@
+:root {
+  color-scheme: light;
+
+  --v3-canvas: #f3f0ec;
+  --v3-canvas-rgb: 243 240 236;
+  --v3-surface: rgb(255 255 255 / 78%);
+  --v3-surface-elevated: rgb(255 255 255 / 92%);
+  --v3-accent-primary: #c6530a;
+  --v3-accent-primary-rgb: 198 83 10;
+  --v3-accent-secondary: #e18b3b;
+  --v3-accent-secondary-rgb: 225 139 59;
+  --v3-accent-gold: var(--v3-accent-secondary);
+  --v3-accent-gold-rgb: var(--v3-accent-secondary-rgb);
+  --v3-text-primary: #191512;
+  --v3-text-primary-rgb: 25 21 18;
+  --v3-text-secondary: #4d4640;
+  --v3-text-muted: #746b63;
+  --v3-border: rgb(33 23 16 / 13%);
+  --v3-highlight: rgb(198 83 10 / 8%);
+  --v3-focus-ring: var(--v3-accent-primary);
+  --v3-cta-primary-bg: var(--v3-accent-primary);
+  --v3-cta-primary-text: #fffaf5;
+  --v3-cta-secondary-text: var(--v3-text-primary);
+
+  --v3-shadow-small: 0 12px 32px rgb(33 23 16 / 9%);
+  --v3-shadow-medium: 0 22px 58px rgb(33 23 16 / 15%);
+  --v3-shadow-large: 0 28px 80px rgb(33 23 16 / 18%);
+
+  --v3-radius-card: 20px;
+  --v3-radius-button: 999px;
+  --v3-radius-input: 12px;
+  --v3-radius-feature: 28px;
+
+  --v3-space-1: 4px;
+  --v3-space-2: 8px;
+  --v3-space-3: 12px;
+  --v3-space-4: 16px;
+  --v3-space-6: 24px;
+  --v3-space-8: 32px;
+  --v3-space-12: 48px;
+  --v3-space-16: 64px;
+  --v3-section-space: 104px;
+
+  --v3-slate-50: 255 255 255;
+  --v3-slate-100: 243 240 236;
+  --v3-slate-200: 220 213 205;
+  --v3-slate-300: 180 170 160;
+  --v3-slate-400: 116 107 99;
+  --v3-slate-500: 116 107 99;
+  --v3-slate-600: 77 70 64;
+  --v3-slate-700: 58 51 46;
+  --v3-slate-800: 35 29 24;
+  --v3-slate-900: 25 21 18;
+  --v3-slate-950: 10 8 7;
+
+  --v3-font-heading: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --v3-font-body: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+
+  --background: var(--v3-canvas);
+  --foreground: var(--v3-text-primary);
+  --surface: var(--v3-surface);
+  --surface-raised: var(--v3-surface-elevated);
+  --muted: var(--v3-text-muted);
+  --border: var(--v3-border);
+  --header-background: var(--v3-surface);
+  --color-primary: var(--v3-accent-primary);
+  --color-gold: var(--v3-accent-gold);
+  --color-dark: #0b0b0c;
+  --color-light: #f8f6f3;
+  --gold-text: var(--v3-accent-primary);
+  --font-heading: var(--v3-font-heading);
+  --font-body: var(--v3-font-body);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --v3-canvas: #050505;
+  --v3-canvas-rgb: 5 5 5;
+  --v3-surface: rgb(15 15 15 / 65%);
+  --v3-surface-elevated: rgb(25 25 25 / 75%);
+  --v3-accent-primary: #ff6a00;
+  --v3-accent-primary-rgb: 255 106 0;
+  --v3-accent-secondary: #ffaf45;
+  --v3-accent-secondary-rgb: 255 175 69;
+  --v3-accent-gold: var(--v3-accent-secondary);
+  --v3-accent-gold-rgb: var(--v3-accent-secondary-rgb);
+  --v3-text-primary: #ffffff;
+  --v3-text-primary-rgb: 255 255 255;
+  --v3-text-secondary: #d3d0cc;
+  --v3-text-muted: #a8a8a8;
+  --v3-border: rgb(255 255 255 / 12%);
+  --v3-highlight: rgb(255 106 0 / 12%);
+  --v3-focus-ring: var(--v3-accent-primary);
+  --v3-cta-primary-bg: var(--v3-accent-primary);
+  --v3-cta-primary-text: #1a1008;
+  --v3-cta-secondary-text: var(--v3-text-primary);
+
+  --v3-slate-50: 255 255 255;
+  --v3-slate-100: 235 231 227;
+  --v3-slate-200: 211 208 204;
+  --v3-slate-300: 168 168 168;
+  --v3-slate-400: 168 168 168;
+  --v3-slate-500: 168 168 168;
+  --v3-slate-600: 95 92 89;
+  --v3-slate-700: 52 50 48;
+  --v3-slate-800: 25 25 25;
+  --v3-slate-900: 15 15 15;
+  --v3-slate-950: 5 5 5;
+
+  --background: var(--v3-canvas);
+  --foreground: var(--v3-text-primary);
+  --surface: var(--v3-surface);
+  --surface-raised: var(--v3-surface-elevated);
+  --muted: var(--v3-text-muted);
+  --border: var(--v3-border);
+  --header-background: var(--v3-surface);
+  --color-primary: var(--v3-accent-primary);
+  --color-gold: var(--v3-accent-gold);
+  --color-dark: #0b0b0c;
+  --color-light: #f8f6f3;
+  --gold-text: var(--v3-accent-primary);
+}
+
+.public-site {
+  min-height: 100vh;
+  background: var(--v3-canvas);
+  color: var(--v3-text-primary);
+  font-family: var(--v3-font-body);
+}

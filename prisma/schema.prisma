@@ -1,0 +1,391 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                   String                @id @default(uuid()) @db.Uuid
+  email                String                @unique
+  name                 String
+  image                String?
+  emailVerified        Boolean               @default(false)
+  role                 UserRole              @default(CUSTOMER)
+  status               UserStatus            @default(ACTIVE)
+  emailVerifiedAt      DateTime?             @db.Timestamptz(6)
+  createdAt            DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime              @updatedAt @db.Timestamptz(6)
+  bookings             Booking[]
+  authoredEvents       Event[]               @relation("EventAuthor")
+  createdMovies        Movie[]               @relation("MovieCreator")
+  authoredNews         News[]                @relation("NewsAuthor")
+  promotionRedemptions PromotionRedemption[]
+  createdShowtimes     Showtime[]            @relation("ShowtimeCreator")
+  sessions             Session[]
+  accounts             Account[]
+
+  @@index([role, status])
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  expiresAt DateTime @db.Timestamptz(6)
+  token     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id @default(uuid()) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(6)
+  scope                 String?
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(uuid()) @db.Uuid
+  identifier String
+  value      String   @db.Text
+  expiresAt  DateTime @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([identifier])
+}
+
+model Movie {
+  id               String      @id @default(uuid()) @db.Uuid
+  tmdbId           Int?        @unique
+  slug             String      @unique
+  title            String
+  overview         String
+  genres           String[]    @default([])
+  posterPath       String?
+  backdropPath     String?
+  runtimeMinutes   Int?
+  releaseDate      DateTime?   @db.Date
+  originalLanguage String?     @db.VarChar(10)
+  status           MovieStatus @default(DRAFT)
+  publishedAt      DateTime?   @db.Timestamptz(6)
+  tmdbSyncedAt     DateTime?   @db.Timestamptz(6)
+  createdById      String?     @db.Uuid
+  createdAt        DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime    @updatedAt @db.Timestamptz(6)
+  createdBy        User?       @relation("MovieCreator", fields: [createdById], references: [id])
+  showtimes        Showtime[]
+
+  @@index([status, publishedAt])
+  @@index([releaseDate])
+}
+
+model Screen {
+  id        String     @id @default(uuid()) @db.Uuid
+  code      ScreenCode @unique
+  name      String
+  capacity  Int
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(6)
+  events    Event[]
+  seats     Seat[]
+  showtimes Showtime[]
+
+  @@index([isActive])
+}
+
+model Seat {
+  id            String         @id @default(uuid()) @db.Uuid
+  screenId      String         @db.Uuid
+  rowLabel      String         @db.VarChar(8)
+  seatNumber    Int
+  type          SeatType       @default(STANDARD)
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(6)
+  screen        Screen         @relation(fields: [screenId], references: [id])
+  showtimeSeats ShowtimeSeat[]
+
+  @@unique([screenId, rowLabel, seatNumber])
+  @@index([screenId, isActive])
+}
+
+model Showtime {
+  id             String         @id @default(uuid()) @db.Uuid
+  movieId        String         @db.Uuid
+  screenId       String         @db.Uuid
+  startsAt       DateTime       @db.Timestamptz(6)
+  endsAt         DateTime       @db.Timestamptz(6)
+  status         ShowtimeStatus @default(SCHEDULED)
+  basePriceMinor Int
+  currency       String         @db.Char(3)
+  language       String         @db.VarChar(10)
+  createdById    String?        @db.Uuid
+  createdAt      DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(6)
+  bookings       Booking[]
+  createdBy      User?          @relation("ShowtimeCreator", fields: [createdById], references: [id])
+  movie          Movie          @relation(fields: [movieId], references: [id])
+  screen         Screen         @relation(fields: [screenId], references: [id])
+  showtimeSeats  ShowtimeSeat[]
+
+  @@index([movieId, startsAt])
+  @@index([screenId, startsAt, endsAt])
+  @@index([status, startsAt])
+}
+
+model ShowtimeSeat {
+  id             String             @id @default(uuid()) @db.Uuid
+  showtimeId     String             @db.Uuid
+  seatId         String             @db.Uuid
+  status         ShowtimeSeatStatus @default(AVAILABLE)
+  holdExpiresAt  DateTime?          @db.Timestamptz(6)
+  bookingId      String?            @db.Uuid
+  createdAt      DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime           @updatedAt @db.Timestamptz(6)
+  bookingSeats   BookingSeat[]
+  currentBooking Booking?           @relation("CurrentSeatBooking", fields: [bookingId], references: [id])
+  seat           Seat               @relation(fields: [seatId], references: [id])
+  showtime       Showtime           @relation(fields: [showtimeId], references: [id])
+
+  @@unique([showtimeId, seatId])
+  @@index([showtimeId, status])
+  @@index([bookingId])
+  @@index([status, holdExpiresAt])
+}
+
+model Booking {
+  id                   String                @id @default(uuid()) @db.Uuid
+  bookingReference     String                @unique
+  userId               String                @db.Uuid
+  showtimeId           String                @db.Uuid
+  status               BookingStatus         @default(PENDING_PAYMENT)
+  idempotencyKey       String
+  subtotalMinor        Int
+  discountMinor        Int                   @default(0)
+  taxMinor             Int                   @default(0)
+  totalMinor           Int
+  currency             String                @db.Char(3)
+  promotionId          String?               @db.Uuid
+  holdExpiresAt        DateTime?             @db.Timestamptz(6)
+  createdAt            DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime              @updatedAt @db.Timestamptz(6)
+  promotion            Promotion?            @relation(fields: [promotionId], references: [id])
+  showtime             Showtime              @relation(fields: [showtimeId], references: [id])
+  user                 User                  @relation(fields: [userId], references: [id])
+  seats                BookingSeat[]
+  promotionRedemptions PromotionRedemption[]
+  currentSeatHolds     ShowtimeSeat[]        @relation("CurrentSeatBooking")
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([showtimeId, status])
+  @@index([status, holdExpiresAt])
+}
+
+model BookingSeat {
+  id             String       @id @default(uuid()) @db.Uuid
+  bookingId      String       @db.Uuid
+  showtimeSeatId String       @db.Uuid
+  seatLabel      String       @db.VarChar(24)
+  priceMinor     Int
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  booking        Booking      @relation(fields: [bookingId], references: [id])
+  showtimeSeat   ShowtimeSeat @relation(fields: [showtimeSeatId], references: [id])
+
+  @@unique([bookingId, showtimeSeatId])
+  @@index([showtimeSeatId])
+}
+
+model Event {
+  id          String      @id @default(uuid()) @db.Uuid
+  slug        String      @unique
+  title       String
+  category    String
+  summary     String
+  body        String
+  imageKey    String?
+  startsAt    DateTime    @db.Timestamptz(6)
+  endsAt      DateTime?   @db.Timestamptz(6)
+  timeZone    String
+  screenId    String?     @db.Uuid
+  status      EventStatus @default(DRAFT)
+  publishedAt DateTime?   @db.Timestamptz(6)
+  authorId    String?     @db.Uuid
+  createdAt   DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime    @updatedAt @db.Timestamptz(6)
+  author      User?       @relation("EventAuthor", fields: [authorId], references: [id])
+  screen      Screen?     @relation(fields: [screenId], references: [id])
+
+  @@index([status, startsAt])
+  @@index([authorId])
+}
+
+model News {
+  id          String     @id @default(uuid()) @db.Uuid
+  slug        String     @unique
+  title       String
+  excerpt     String
+  body        String
+  category    String
+  imageKey    String?
+  status      NewsStatus @default(DRAFT)
+  featured    Boolean    @default(false)
+  publishedAt DateTime?  @db.Timestamptz(6)
+  authorId    String?    @db.Uuid
+  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @db.Timestamptz(6)
+  author      User?      @relation("NewsAuthor", fields: [authorId], references: [id])
+
+  @@index([status, publishedAt])
+  @@index([authorId])
+}
+
+model Promotion {
+  id                   String                @id @default(uuid()) @db.Uuid
+  code                 String?               @unique
+  name                 String
+  description          String
+  imageKey             String?
+  discountType         DiscountType
+  discountValue        Int
+  startsAt             DateTime              @db.Timestamptz(6)
+  endsAt               DateTime              @db.Timestamptz(6)
+  status               PromotionStatus       @default(DRAFT)
+  totalRedemptionLimit Int?
+  perUserLimit         Int?
+  minimumSpendMinor    Int?
+  createdAt            DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime              @updatedAt @db.Timestamptz(6)
+  bookings             Booking[]
+  redemptions          PromotionRedemption[]
+
+  @@index([status, startsAt, endsAt])
+}
+
+model PromotionRedemption {
+  id            String    @id @default(uuid()) @db.Uuid
+  promotionId   String    @db.Uuid
+  bookingId     String    @db.Uuid
+  userId        String    @db.Uuid
+  discountMinor Int
+  redeemedAt    DateTime  @default(now()) @db.Timestamptz(6)
+  booking       Booking   @relation(fields: [bookingId], references: [id])
+  promotion     Promotion @relation(fields: [promotionId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@unique([promotionId, bookingId])
+  @@index([userId, promotionId])
+}
+
+model CinemaSettings {
+  id           String   @id @default("default")
+  cinemaName   String   @default("Arena Laserplex")
+  description  String   @default("")
+  address      String   @default("")
+  timezone     String   @default("Asia/Colombo")
+  contactEmail String?
+  contactPhone String?
+  websiteUrl   String?
+  instagramUrl String?
+  xUrl         String?
+  whatsappUrl  String?
+  facebookUrl  String?
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum MovieStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ScreenCode {
+  L
+  XL
+}
+
+enum SeatType {
+  STANDARD
+  ACCESSIBLE
+}
+
+enum ShowtimeStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+enum ShowtimeSeatStatus {
+  AVAILABLE
+  HELD
+  BOOKED
+  BLOCKED
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  ARCHIVED
+}
+
+enum NewsStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PromotionStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  DISABLED
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
